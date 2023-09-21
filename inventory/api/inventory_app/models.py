@@ -19,7 +19,7 @@ class Product(models.Model):
     category= models.ForeignKey(Category, related_name="items",
                                 on_delete=models.CASCADE)
     def __str__(self):
-        return self.name
+        return self.title
 
     def get_api_url(self):
         return reverse("api_product", kwargs={"pk": self.id})
