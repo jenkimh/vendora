@@ -1,7 +1,16 @@
 from django.db import models
 from django.urls import reverse
 
-# Create your models here.
+class CategoryVO(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+class ProductVO(models.Model):
+    title = models.CharField(max_length=200)
+    price = models.FloatField()
+    description = models.CharField(max_length=200)
+    image = models.ImageField()
+    category= models.ForeignKey(CategoryVO, related_name="items", on_delete=models.CASCADE)
+
 class Address(models.Model):
     customer = models.ForeignKey(
         'Customer',
@@ -34,5 +43,77 @@ class Customer(models.Model):
     def get_api_url(self):
         return reverse("api_customer", kwargs={"pk": self.id})
 
-#might encounter circular import issues since
-#address and customer have two way relationship
+class Status(models.Model):
+    id = models.PositiveSmallIntegerField(primary_key=True)
+    name = models.CharField(max_length=10, unique=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "statuses"
+
+
+class Payment(models.Model):
+    pass
+
+
+class Order(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="customer")
+    product = models.ForeignKey(ProductVO, on_delete=models.CASCADE)
+    order_number = models.CharField(max_length= 15)
+    ordered_date = models.DateTimeField()
+    status = models.ForeignKey(Status, on_delete=models.CASCADE, default= "PENDING")
+    shipping_address = models.ForeignKey(Address, related_name="shipping_address", on_delete=models.CASCADE)
+    billing_address = models.ForeignKey(Address, related_name="billing_address", on_delete=models.CASCADE)
+    payment = models.ForeignKey(Payment, on_delete=models.CASCADE , blank=True, null=True)
+
+    def ship(self):
+        status = Status.objects.get(name="SHIPPED")
+        self.status = status
+        self.save()
+
+    def deliver(self):
+        status = Status.objects.get(name="DELIVERED")
+        self.status = status
+        self.save()
+
+    def get_api_url(self):
+        return reverse("api_order", kwargs={"id": self.id})
+
+    def __str__(self):
+        return self.customer
+
+
+class Cart(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+
+    def calculate_subtotal(self):
+        subtotal = sum(order_product.product.price for order_product in self.order_products.all())
+        return subtotal
+
+    def save(self, *args, **kwargs):
+        self.subtotal = self.calculate_subtotal()
+        super().save(*args, **kwargs)
+
+    def add_product(self, product):
+        OrderProduct.objects.create(cart=self, product=product)
+
+    def remove_product(self, product):
+        try:
+            order_product = self.order_products.get(product=product)
+            order_product.delete()
+        except OrderProduct.DoesNotExist:
+            pass
+
+
+class OrderProduct(models.Model):
+    product = models.ForeignKey(ProductVO, on_delete=models.CASCADE)
+    cart = models.ForeignKey(Cart, related_name="add_to_cart", on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.product
+
+    def subtotal(self):
+        return self.product.price
