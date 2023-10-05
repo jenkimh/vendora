@@ -25,7 +25,7 @@ SECRET_KEY = '&^!70l2nec+%!6lp3sw(s5u%m3dps1r7l19lor!d01qm-avy#3'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "inventory", '0.0.0.0']
+ALLOWED_HOSTS = ["localhost", "inventory" ]
 
 
 # Application definition
@@ -119,3 +119,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+RABBITMQ_HOST = 'rabbitmq'
+RABBITMQ_PORT = 5672
+RABBITMQ_USERNAME = 'jkim'
+RABBITMQ_PASSWORD = 'nyc123'
+RABBITMQ_EXCHANGE = 'product_info'
