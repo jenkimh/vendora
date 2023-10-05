@@ -24,67 +24,82 @@ def send_product_data(product):
     )
     connection.close()
 
-def create_product(json_content):
-    try:
-        content = json.loads(json_content)
-    except json.JSONDecodeError:
-        return 400, {"message": "Bad JSON"}, None
+# def create_product(json_content):
+#     try:
+#         content = json.loads(json_content)
+#     except json.JSONDecodeError:
+#         return 400, {"message": "Bad JSON"}, None
 
-    required_properties = [
-        "title",
-        "price",
-        "description",
-        "image",
-        "category",
-    ]
-    missing_properties = []
-    for required_property in required_properties:
-        if (
-            required_property not in content
-            or len(content[required_property]) == 0
-        ):
-            missing_properties.append(required_property)
-    if missing_properties:
-        response_content = {
-            "message": "missing properties",
-            "properties": missing_properties,
-        }
-        return 400, response_content, None
-
-    try:
-        product = Product.objects.create_product(
-            title=content["title"],
-            price=content["price"],
-            description=content["description"],
-            image=content["image"],
-            category=content["category"],
-        )
-        return 200, product, product
-    except IntegrityError as e:
-        return 409, {"message": str(e)}, None
-    except ValueError as e:
-        return 400, {"message": str(e)}, None
+#     required_properties = [
+#         "title",
+#         "price",
+#         "description",
+#         "image",
+#         "category",
+#     ]
+#     missing_properties = []
+#     for required_property in required_properties:
+#         if (
+#             required_property not in content
+#             # or len(content[required_property]) == 0
+#         ):
+#             missing_properties.append(required_property)
+#     if missing_properties:
+#         response_content = {
+#             "message": "missing properties",
+#             "properties": missing_properties,
+#         }
+#         return 400, response_content, None
+#     try:
+#         product = Product.objects.create_product(
+#             title=content["title"],
+#             price=content["price"],
+#             description=content["description"],
+#             image=content["image"],
+#             category=content["category"],
+#         )
+#         return 200, product, product
+#     except IntegrityError as e:
+#         return 409, {"message": str(e)}, None
+#     except ValueError as e:
+#         return 400, {"message": str(e)}, None
 
 
 @require_http_methods(["GET", "POST"])
 def api_list_products(request):
     if request.method == "GET":
-        products = Product.objects.all
+        products = Product.objects.all()
         return JsonResponse(
             {"products": products},
             encoder=ProductEncoder
         )
     else:
-        status_code, response_content, _ = create_product(request.body)
-        if status_code >= 200 and status_code < 300:
-            send_product_data(response_content)
-        response = JsonResponse(
-            response_content,
+        content = json.loads(request.body)
+        try:
+            category = Category.objects.get(id=content["category"])
+            content["category"] = category
+        except Category.DoesNotExist:
+            return JsonResponse(
+                {"message": "Invalid category id"},
+                status=400,
+            )
+        product = Product.objects.create(**content)
+
+        # send_product_data(product)
+        return JsonResponse(
+            product,
             encoder=ProductEncoder,
             safe=False,
         )
-        response.status_code = status_code
-        return response
+        # status_code, response_content = create_product(request.body)
+        # if status_code >= 200 and status_code < 300:
+        # response = JsonResponse(
+        #     response_content,
+        #     encoder=ProductEncoder,
+        #     safe=False,
+        # )
+        # response.status_code = status_code
+        # return response
 
 
 @require_http_methods(["GET", "PUT", "DELETE"])
@@ -137,3 +152,20 @@ def api_product_detail(request, id):
         response = HttpResponse()
         response.status_code = 204
         return response
+
+@require_http_methods(["GET", "POST"])
+def api_list_categories(request):
+    if request.method == "GET":
+        categories = Category.objects.all()
+        return JsonResponse(
+            {"categories": categories},
+            encoder=CategoryEncoder
+        )
+    else:
+        content = json.loads(request.body)
+        category = Category.objects.create(**content)
+        return JsonResponse(
+            category,
+            encoder=CategoryEncoder,
+            safe=False,
+        )
