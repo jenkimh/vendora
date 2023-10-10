@@ -14,11 +14,6 @@ django.setup()
 
 from sales_app.models import ProductVO
 
-rabbitmq_host = os.environ.get("RABBITMQ_HOST", "rabbitmq")
-rabbitmq_port = int(os.environ.get("RABBITMQ_PORT", 5672))
-rabbitmq_user = os.environ.get("RABBITMQ_DEFAULT_USER", "vendora")
-rabbitmq_password = os.environ.get("RABBITMQ_DEFAULT_PASS", "nyc123")
-
 
 def update_product_vo(ch, method, properties, body):
     content = json.loads(body)
