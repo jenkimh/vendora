@@ -88,6 +88,15 @@ def api_list_categories(request):
         )
     else:
         content = json.loads(request.body)
+        try:
+            if "parent_category" in content:
+                parent_category = Category.objects.get(id=content["parent_category"])
+                content["parent_category"] = parent_category
+        except Category.DoesNotExist:
+               return JsonResponse(
+                {"message": "Invalid Category"},
+                status=400,
+            )
         category = Category.objects.create(**content)
         return JsonResponse(
             category,
@@ -105,6 +114,15 @@ def api_show_category(request, id):
         )
     elif request.method == "PUT":
         content = json.loads(request.body)
+        try:
+            if "parent_category" in content:
+                parent_category = Category.objects.get(id=content["parent_category"])
+                content["parent_category"] = parent_category
+        except Category.DoesNotExist:
+               return JsonResponse(
+                {"message": "Invalid Category"},
+                status=400,
+            )
         category = Category.objects.filter(id=id).update(**content)
         category = Category.objects.get(id=id)
         return JsonResponse(
