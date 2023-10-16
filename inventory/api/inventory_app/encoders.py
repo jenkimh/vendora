@@ -8,7 +8,11 @@ class CategoryEncoder(ModelEncoder):
         "name",
         "parent_category",
     ]
-
+    def get_extra_data(self, o):
+        extra_data = super().get_extra_data(o)
+        if o.parent_category:
+            extra_data["parent_category"] = CategoryEncoder().default(o.parent_category)
+        return extra_data
 
 class ProductEncoder(ModelEncoder):
     model = Product
