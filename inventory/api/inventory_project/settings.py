@@ -25,7 +25,7 @@ SECRET_KEY = '%@e3%)b((fs3d&+8u5jt#=w^1-onz5cjxt^1cy==tj%_drj1(v'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "sales"]
 
 
 # Application definition
@@ -44,7 +44,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -119,3 +119,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+RABBITMQ_HOST = 'rabbitmq'
+RABBITMQ_PORT = 5672
+RABBITMQ_USERNAME = 'jkim'
+RABBITMQ_PASSWORD = 'nyc123'
+RABBITMQ_EXCHANGE = 'product_info'

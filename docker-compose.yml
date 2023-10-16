@@ -1,68 +1,80 @@
-volumes:
-  beta-data:
-    external: true
+version: "3.7"
 services:
-  react:
-    image: node:lts-bullseye
-    command: /bin/bash run.sh
-    working_dir: /app
-    volumes:
-      - ./ghi/app:/app
-    ports:
-      - "3000:3000"
-    environment:
-      HOST_OS: ${OS}
-      NODE_ENV: development
-      HOST: "0.0.0.0"
-  database:
-    image: postgres:14.2-bullseye
-    volumes:
-      - beta-data:/var/lib/postgresql/data
-      - ./db:/docker-entrypoint-initdb.d
-    environment:
-      - POSTGRES_MULTIPLE_DATABASES=inventory,sales
-      - POSTGRES_PASSWORD=test-databases
-    ports:
-      - 15432:5432
   inventory-api:
     build:
       context: ./inventory/api
       dockerfile: ./Dockerfile.dev
+    environment:
+      DATABASE_URL: "postgres://inventory:password@database:5432/inventory"
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      WAIT_HOSTS: database:5432, rabbitmq:5672
+      WAIT_TIMEOUT: 180
     ports:
-      - "8100:8000"
+      - "8000:8000"
     volumes:
       - ./inventory/api:/app
     depends_on:
       - database
-    environment:
-      DATABASE_URL: postgres://inventory:password@database:5432/inventory
-      WAIT_HOSTS: database:5432
-      WAIT_TIMEOUT: 240
+      - rabbitmq
+    networks:
+      - mynetwork
   sales-api:
     build:
       context: ./sales/api
       dockerfile: ./Dockerfile.dev
     ports:
-      - "8090:8000"
+      - "8001:8001"
     volumes:
       - ./sales/api:/app
     depends_on:
+      - rabbitmq
       - database
     environment:
-      DATABASE_URL: postgres://sales:password@database:5432/sales
-      WAIT_HOSTS: database:5432
-      WAIT_TIMEOUT: 240
-  rabbitmq:
-    image: rabbitmq:3-management-alpine
-    container_name: 'rabbitmq'
-    ports:
-        - 5672:5672
-        - 15672:15672
-    volumes:
-        - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
-        - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+      DATABASE_URL: "postgres://sales_app:password@database:5432/sales_app"
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      WAIT_HOSTS: database:5432, rabbitmq:5672
+      WAIT_TIMEOUT: 180
     networks:
-        - rabbitmq_go_net
+      - mynetwork
+  rabbitmq:
+    container_name: "rabbitmq"
+    image: rabbitmq:3.8-management-alpine
+    environment:
+      - RABBITMQ_DEFAULT_USER=jkim
+      - RABBITMQ_DEFAULT_PASS=nyc123
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    networks:
+      - mynetwork
+  database:
+    image: postgres:14
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/setup:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_MULTIPLE_DATABASES=inventory,sales
+      - POSTGRES_PASSWORD=test-databases
+    ports:
+      - 15432:5432
+    networks:
+      - mynetwork
+  react:
+    image: node:latest
+    command: npm start
+    working_dir: /app
+    volumes:
+      - ./ghi/app:/app
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3001
+    ports:
+      - "3001:3001"
+volumes:
+  pgdata:
+
+
 networks:
-  rabbitmq_go_net:
-    driver: bridge
+  mynetwork:
