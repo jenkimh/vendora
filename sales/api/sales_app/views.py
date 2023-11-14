@@ -25,7 +25,7 @@ def api_list_sales(request):
             content["product"] = product
         except ProductVO.DoesNotExist:
             return JsonResponse(
-                {"message": "Invalid product"}
+                {"message": "Invalid product"},
                 status=400,
             )
         order = Order.objects.create(**content)
