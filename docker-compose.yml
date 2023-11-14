@@ -17,8 +17,8 @@ services:
     depends_on:
       - database
       - rabbitmq
-    networks:
-      - mynetwork
+    # networks:
+    #   - mynetwork
   sales-api:
     build:
       context: ./sales/api
@@ -36,8 +36,8 @@ services:
       RABBITMQ_PORT: 5672
       WAIT_HOSTS: database:5432, rabbitmq:5672
       WAIT_TIMEOUT: 180
-    networks:
-      - mynetwork
+    # networks:
+    #   - mynetwork
   rabbitmq:
     container_name: "rabbitmq"
     image: rabbitmq:3.8-management-alpine
@@ -47,8 +47,8 @@ services:
     ports:
       - '5672:5672'
       - '15672:15672'
-    networks:
-      - mynetwork
+    # networks:
+    #   - mynetwork
   database:
     image: postgres:14
     volumes:
@@ -59,8 +59,8 @@ services:
       - POSTGRES_PASSWORD=test-databases
     ports:
       - 15432:5432
-    networks:
-      - mynetwork
+    # networks:
+    #   - mynetwork
   react:
     image: node:latest
     command: npm start
@@ -72,9 +72,15 @@ services:
       - PORT=3001
     ports:
       - "3001:3001"
+  product_consumer:
+    build:
+      context: ./sales/api
+      dockerfile: ./Dockerfile.product.dev
+    volumes:
+      - ./sales/api:/app
 volumes:
   pgdata:
 
 
-networks:
-  mynetwork:
+# networks:
+#   mynetwork:
