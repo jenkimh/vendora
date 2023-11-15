@@ -43,6 +43,7 @@ def api_list_products(request):
                 status=400,
             )
         product = Product.objects.create(**content)
+        send_product_data(product)
         return JsonResponse(
             product,
             encoder=ProductEncoder,
@@ -69,6 +70,7 @@ def api_show_product(request, id):
             )
         product = Product.objects.filter(id=id).update(**content)
         product = Product.objects.get(id=id)
+        send_product_data(product)
         return JsonResponse(
             product,
             encoder=ProductEncoder,
