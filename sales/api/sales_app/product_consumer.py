@@ -24,24 +24,21 @@ def update_product_vo(ch, method, properties, body):
     category = content["category"]
 
     ProductVO.objects.update_or_create(
-            title=title,
-            defaults={
-                "price": price,
-                "description": description,
-                "image": image,
-                "category": category
-            },
-        )
+        title=title,
+        defaults={
+            "price": price,
+            "description": description,
+            "image": image,
+            "category": category,
+        },
+    )
+
+
 while True:
     try:
-        connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host=rabbitmq_host,
-        port=rabbitmq_port,
-        credentials=pika.PlainCredentials(rabbitmq_user, rabbitmq_password),
-    )
-)
+        parameters = pika.ConnectionParameters(host="rabbitmq")
+        connection = pika.BlockingConnection(parameters)
         channel = connection.channel()
-
         channel.exchange_declare(
             exchange="product_info",
             exchange_type="fanout",
