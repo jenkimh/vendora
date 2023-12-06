@@ -6,7 +6,16 @@ import json
 import pika
 
 from common.json import ModelEncoder
-from .models import CategoryVO, ProductVO, Address, Customer, Status, Payment, Cart, Order, OrderProduct
+from .models import (
+    ProductVO,
+    Address,
+    Customer,
+    Status,
+    Payment,
+    Cart,
+    Order,
+    OrderProduct,
+)
 from .encoders import CustomerEncoder, AddressEncoder, OrderEncoder, StatusEncoder
 
 
@@ -14,10 +23,7 @@ from .encoders import CustomerEncoder, AddressEncoder, OrderEncoder, StatusEncod
 def api_list_sales(request):
     if request.method == "GET":
         orders = Order.objects.all()
-        return JsonResponse(
-            {"orders": orders},
-            encoder=OrderEncoder
-        )
+        return JsonResponse({"orders": orders}, encoder=OrderEncoder)
     else:
         content = json.loads(request.body)
         try:
@@ -35,6 +41,7 @@ def api_list_sales(request):
             safe=False,
         )
 
+
 @require_http_methods(["GET", "PUT", "DELETE"])
 def api_show_sales(request, id):
     if request.method == "GET":
@@ -51,7 +58,7 @@ def api_show_sales(request, id):
                 product = ProductVO.objects.get(id=content["product"])
                 content["product"] = product
         except ProductVO.DoesNotExist:
-                return JsonResponse(
+            return JsonResponse(
                 {"message": "Invalid product"},
                 status=400,
             )
