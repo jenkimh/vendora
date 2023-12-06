@@ -9,6 +9,9 @@ class ProductVO(models.Model):
     image = models.ImageField()
     category = models.CharField(max_length=200)
 
+    def __str__(self):
+        return self.title
+
 
 class Address(models.Model):
     customer = models.ForeignKey(
