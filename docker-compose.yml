@@ -6,8 +6,6 @@ services:
       dockerfile: ./Dockerfile.dev
     environment:
       DATABASE_URL: "postgres://inventory:password@database:5432/inventory"
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_PORT: 5672
       WAIT_HOSTS: database:5432, rabbitmq:5672
       WAIT_TIMEOUT: 180
     ports:
@@ -30,19 +28,10 @@ services:
       - database
     environment:
       DATABASE_URL: "postgres://sales_app:password@database:5432/sales_app"
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_PORT: 5672
       WAIT_HOSTS: database:5432, rabbitmq:5672
       WAIT_TIMEOUT: 180
   rabbitmq:
-    container_name: "rabbitmq"
-    image: rabbitmq:3.8-management-alpine
-    environment:
-      - RABBITMQ_DEFAULT_USER=jkim
-      - RABBITMQ_DEFAULT_PASS=nyc123
-    ports:
-      - '5672:5672'
-      - '15672:15672'
+    image: rabbitmq:3
   database:
     image: postgres:14
     volumes:
@@ -70,5 +59,13 @@ services:
       dockerfile: ./Dockerfile.product.dev
     volumes:
       - ./sales/api:/app
+    depends_on:
+      - rabbitmq
+      - database
+    environment:
+      DATABASE_URL: "postgres://sales_app:password@database:5432/sales_app"
+      WAIT_HOSTS: database:5432, rabbitmq:5672
+      WAIT_TIMEOUT: 180
+
 volumes:
   pgdata:
