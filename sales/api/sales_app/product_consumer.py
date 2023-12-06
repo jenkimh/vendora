@@ -21,7 +21,7 @@ def update_product_vo(ch, method, properties, body):
     price = content["price"]
     description = content["description"]
     image = content["image"]
-    category = content["category"]
+    category = content["category"]["name"]
 
     ProductVO.objects.update_or_create(
         title=title,

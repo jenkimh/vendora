@@ -7,7 +7,7 @@ class ProductVO(models.Model):
     price = models.FloatField()
     description = models.CharField(max_length=200)
     image = models.ImageField()
-    category = models.PositiveIntegerField()
+    category = models.CharField(max_length=200)
 
 
 class Address(models.Model):
