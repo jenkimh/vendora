@@ -24,14 +24,12 @@ def send_product_data(product):
     )
     connection.close()
 
+
 @require_http_methods(["GET", "POST"])
 def api_list_products(request):
     if request.method == "GET":
         products = Product.objects.all()
-        return JsonResponse(
-            {"products": products},
-            encoder=ProductEncoder
-        )
+        return JsonResponse({"products": products}, encoder=ProductEncoder)
     else:
         content = json.loads(request.body)
         try:
@@ -43,12 +41,20 @@ def api_list_products(request):
                 status=400,
             )
         product = Product.objects.create(**content)
-        send_product_data(product)
-        return JsonResponse(
-            product,
-            encoder=ProductEncoder,
-            safe=False,
-        )
+        if product:
+            send_product_data(product)
+            return JsonResponse(
+                product,
+                encoder=ProductEncoder,
+                safe=False,
+            )
+        else:
+            return JsonResponse(
+                {"message": "Failed to create product"},
+                status=500,
+            )
+
+
 @require_http_methods(["GET", "PUT", "DELETE"])
 def api_show_product(request, id):
     if request.method == "GET":
@@ -64,7 +70,7 @@ def api_show_product(request, id):
                 category = Category.objects.get(id=content["category"])
                 content["category"] = category
         except Category.DoesNotExist:
-               return JsonResponse(
+            return JsonResponse(
                 {"message": "Invalid Category"},
                 status=400,
             )
@@ -77,17 +83,15 @@ def api_show_product(request, id):
             safe=False,
         )
     else:
-       count, _ = Product.objects.filter(id=id).delete()
-       return JsonResponse({"deleted": count > 0})
+        count, _ = Product.objects.filter(id=id).delete()
+        return JsonResponse({"deleted": count > 0})
+
 
 @require_http_methods(["GET", "POST"])
 def api_list_categories(request):
     if request.method == "GET":
         categories = Category.objects.all()
-        return JsonResponse(
-            {"categories": categories},
-            encoder=CategoryEncoder
-        )
+        return JsonResponse({"categories": categories}, encoder=CategoryEncoder)
     else:
         content = json.loads(request.body)
         try:
@@ -95,7 +99,7 @@ def api_list_categories(request):
                 parent_category = Category.objects.get(id=content["parent_category"])
                 content["parent_category"] = parent_category
         except Category.DoesNotExist:
-               return JsonResponse(
+            return JsonResponse(
                 {"message": "Invalid Category"},
                 status=400,
             )
@@ -105,6 +109,7 @@ def api_list_categories(request):
             encoder=CategoryEncoder,
             safe=False,
         )
+
 
 @require_http_methods(["GET", "PUT", "DELETE"])
 def api_show_category(request, id):
@@ -121,7 +126,7 @@ def api_show_category(request, id):
                 parent_category = Category.objects.get(id=content["parent_category"])
                 content["parent_category"] = parent_category
         except Category.DoesNotExist:
-               return JsonResponse(
+            return JsonResponse(
                 {"message": "Invalid Category"},
                 status=400,
             )
@@ -133,5 +138,5 @@ def api_show_category(request, id):
             safe=False,
         )
     else:
-       count, _ = Category.objects.filter(id=id).delete()
-       return JsonResponse({"deleted": count > 0})
+        count, _ = Category.objects.filter(id=id).delete()
+        return JsonResponse({"deleted": count > 0})
