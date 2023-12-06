@@ -75,8 +75,20 @@ WSGI_APPLICATION = "inventory_project.wsgi.application"
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
 
-DATABASES = {}
-DATABASES["default"] = dj_database_url.config()
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "HOST": "database",
+        "PORT": "5432",
+        "NAME": "inventory",
+        "USER": "inventory",
+        "PASSWORD": "Dbpassword",
+    }
+}
+
+# Use DATABASE_URL if available (useful for local development)
+if "DATABASE_URL" in os.environ:
+    DATABASES["default"] = dj_database_url.config(default=os.environ["DATABASE_URL"])
 
 
 # Password validation

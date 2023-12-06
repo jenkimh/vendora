@@ -39,7 +39,7 @@ services:
       - ./database/setup:/docker-entrypoint-initdb.d
     environment:
       - POSTGRES_MULTIPLE_DATABASES=inventory,sales
-      - POSTGRES_PASSWORD=test-databases
+      - POSTGRES_PASSWORD=Dbpassword
     ports:
       - 15432:5432
   react:
